@@ -4,7 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-export const AddField = ({ stateId, addTask }) => {
+export const AddField = ({ addTask }) => {
   const [inputValue, setInputValue] = React.useState("");
   const [checkBoxValue, setCheckBoxValue] = React.useState(false);
 

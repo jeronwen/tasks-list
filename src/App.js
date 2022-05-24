@@ -6,17 +6,28 @@ import { Item } from "./components/Item";
 const initialState = [{ id: 0, text: "Задача №1", checked: false }];
 function reducer(state, action) {
   if (action.type === "ADD_TASK") {
-    return [
-      ...state,
-      { id: state[state.length - 1].id + 1, ...action.payload },
-    ];
+    let idState;
+    if (state.length == 0) {
+      idState = 0;
+    } else {
+      idState = state[state.length - 1].id + 1;
+    }
+    return [...state, { id: idState, ...action.payload }];
+  }
+  if (action.type === "DELETE_TASK") {
+    return state.filter((item) => {
+      if (item.id !== action.payload) {
+        return item;
+      } else {
+        return;
+      }
+    });
   }
   if (action.type === "CHECK_TASK") {
     return state.map((item) => {
       if (item.id === action.payload.id) {
         return { ...item, checked: action.payload.checked };
       }
-      return item;
     });
   }
   return state;
@@ -36,6 +47,12 @@ function App() {
       payload: value,
     });
   };
+  const deleteTask = (value) => {
+    dispatch({
+      type: "DELETE_TASK",
+      payload: value,
+    });
+  };
 
   return (
     <div className="App">
@@ -43,7 +60,7 @@ function App() {
         <Paper className="header" elevation={0}>
           <h4>Список задач</h4>
         </Paper>
-        <AddField addTask={addTask} stateId={state[Array.length - 1].id} />
+        <AddField addTask={addTask} />
         <Divider />
         <Tabs value={0}>
           <Tab label="Все" />
@@ -58,6 +75,7 @@ function App() {
               text={data.text}
               checkedItem={data.checked}
               checkTask={checkTask}
+              deleteTask={deleteTask}
               id={data.id}
             />
           ))}
