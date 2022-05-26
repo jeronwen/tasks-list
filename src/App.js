@@ -6,39 +6,46 @@ import { Item } from "./components/Item";
 const initialState = [{ id: 0, text: "Задача №1", checked: false }];
 function reducer(state, action) {
   if (action.type === "ADD_TASK") {
-    let idState;
-    if (state.length == 0) {
-      idState = 0;
-    } else {
-      idState = state[state.length - 1].id + 1;
-    }
-    return [...state, { id: idState, ...action.payload }];
+    return [...state, { id: action.payload.idState, ...action.payload.value }];
   }
   if (action.type === "DELETE_TASK") {
-    return state.filter((item) => {
-      if (item.id !== action.payload) {
-        return item;
-      } else {
-        return;
-      }
-    });
+    return state.filter((item) => item.id !== action.payload);
   }
   if (action.type === "CHECK_TASK") {
     return state.map((item) => {
       if (item.id === action.payload.id) {
         return { ...item, checked: action.payload.checked };
       }
+      return item;
     });
   }
+
+  if (action.type === "DELETE_ALL") {
+    return state.filter((item, index) => item.id !== index);
+  }
+  if (action.type === "CHECK_ALL") {
+    return state.map((item) => {
+      return { ...item, checked: !item.checked };
+    });
+  }
+
   return state;
 }
 function App() {
   const [state, dispatch] = React.useReducer(reducer, initialState);
+  const [boolean, setBoolean] = React.useState(false);
+  //const [fds]
 
   const addTask = (value) => {
+    let idState;
+    if (state.length === 0) {
+      idState = 0;
+    } else {
+      idState = state[state.length - 1].id + 1;
+    }
     dispatch({
       type: "ADD_TASK",
-      payload: value,
+      payload: { idState, value },
     });
   };
   const checkTask = (value) => {
@@ -52,6 +59,19 @@ function App() {
       type: "DELETE_TASK",
       payload: value,
     });
+  };
+
+  const deleteAll = () => {
+    dispatch({
+      type: "DELETE_ALL",
+    });
+  };
+
+  const checkAll = (e) => {
+    dispatch({
+      type: "CHECK_ALL",
+    });
+    setBoolean(!boolean);
   };
 
   return (
@@ -82,8 +102,10 @@ function App() {
         </List>
         <Divider />
         <div className="check-buttons">
-          <Button>Отметить всё</Button>
-          <Button>Очистить</Button>
+          <Button onClick={checkAll}>
+            {boolean ? "Снять отметки" : "Отметить всё"}
+          </Button>
+          <Button onClick={deleteAll}>Очистить</Button>
         </div>
       </Paper>
     </div>
