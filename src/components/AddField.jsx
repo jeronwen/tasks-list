@@ -1,21 +1,32 @@
-import { TextField, Button, Checkbox } from "@mui/material";
-import React from "react";
-import AddIcon from "@mui/icons-material/Add";
-import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import React from 'react';
 
-export const AddField = ({ stateId, addTask }) => {
-  const [inputValue, setInputValue] = React.useState("");
-  const [checkBoxValue, setCheckBoxValue] = React.useState(false);
+import { TextField, Button, Checkbox } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { useSelector } from 'react-redux';
+
+export const AddField = ({ onAdd }) => {
+  const filterBy = useSelector((state) => state.filterBy);
+  const [inputValue, setInputValue] = React.useState('');
+  const [checked, setChecked] = React.useState(false);
+
+  console.log(filterBy);
+
+  const onClickAdd = () => {
+    onAdd(inputValue, checked);
+    setInputValue('');
+    setChecked(false);
+  };
 
   return (
     <div className="field">
       <Checkbox
+        checked={checked}
+        onChange={(e) => setChecked(e.target.checked)}
         className="checkbox"
-        checked={checkBoxValue}
         icon={<RadioButtonUncheckedIcon />}
         checkedIcon={<CheckCircleIcon />}
-        onChange={() => setCheckBoxValue(!checkBoxValue)}
       />
       <TextField
         value={inputValue}
@@ -24,13 +35,7 @@ export const AddField = ({ stateId, addTask }) => {
         variant="standard"
         fullWidth
       />
-      <Button
-        onClick={() => {
-          setInputValue("");
-          setCheckBoxValue(false);
-          addTask({ text: inputValue, checked: checkBoxValue });
-        }}
-      >
+      <Button onClick={onClickAdd}>
         <AddIcon />
       </Button>
     </div>
