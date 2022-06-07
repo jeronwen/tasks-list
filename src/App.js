@@ -1,77 +1,48 @@
-import { Paper, Divider, Button, List, Tabs, Tab } from "@mui/material";
 import React from "react";
+import { Paper, Divider, Button, List, Tabs, Tab } from "@mui/material";
 import { AddField } from "./components/AddField";
 import { Item } from "./components/Item";
+import { useSelector, useDispatch } from "react-redux";
+import { Filter } from "./components/Filter";
+import {
+  addTask,
+  removeTask,
+  toggleCompleted,
+  clearAll,
+  completeAll,
+  fetchTasks,
+} from "./redux/actions/tasks";
 
-const initialState = [{ id: 0, text: "Задача №1", checked: false }];
-function reducer(state, action) {
-  if (action.type === "ADD_TASK") {
-    return [...state, { id: action.payload.idState, ...action.payload.value }];
-  }
-  if (action.type === "DELETE_TASK") {
-    return state.filter((item) => item.id !== action.payload);
-  }
-  if (action.type === "CHECK_TASK") {
-    return state.map((item) => {
-      if (item.id === action.payload.id) {
-        return { ...item, checked: action.payload.checked };
-      }
-      return item;
-    });
-  }
-
-  if (action.type === "DELETE_ALL") {
-    return state.filter((item, index) => item.id !== index);
-  }
-  if (action.type === "CHECK_ALL") {
-    return state.map((item) => {
-      return { ...item, checked: !item.checked };
-    });
-  }
-
-  return state;
-}
 function App() {
-  const [state, dispatch] = React.useReducer(reducer, initialState);
-  const [boolean, setBoolean] = React.useState(false);
-  //const [fds]
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state);
 
-  const addTask = (value) => {
-    let idState;
-    if (state.length === 0) {
-      idState = 0;
-    } else {
-      idState = state[state.length - 1].id + 1;
+  React.useEffect(() => {
+    dispatch(fetchTasks());
+  }, []);
+
+  const handleClickAdd = (text, checked) => {
+    dispatch(addTask(text, checked));
+  };
+
+  const handleClickRemove = (id) => {
+    if (window.confirm("Удалить задачу?")) {
+      dispatch(removeTask(id));
     }
-    dispatch({
-      type: "ADD_TASK",
-      payload: { idState, value },
-    });
-  };
-  const checkTask = (value) => {
-    dispatch({
-      type: "CHECK_TASK",
-      payload: value,
-    });
-  };
-  const deleteTask = (value) => {
-    dispatch({
-      type: "DELETE_TASK",
-      payload: value,
-    });
   };
 
-  const deleteAll = () => {
-    dispatch({
-      type: "DELETE_ALL",
-    });
+  const handleClickToggle = (id) => {
+    dispatch(toggleCompleted(id));
   };
 
-  const checkAll = (e) => {
-    dispatch({
-      type: "CHECK_ALL",
-    });
-    setBoolean(!boolean);
+  const handleClickCompleteAll = () => {
+    dispatch(completeAll());
+  };
+
+  const handleClickClearAll = () => {
+    if (window.confirm("Очистить все задачи?")) {
+      dispatch(clearAll());
+    }
   };
 
   return (
@@ -80,32 +51,44 @@ function App() {
         <Paper className="header" elevation={0}>
           <h4>Список задач</h4>
         </Paper>
-        <AddField addTask={addTask} />
+        <AddField onAdd={handleClickAdd} />
         <Divider />
-        <Tabs value={0}>
-          <Tab label="Все" />
-          <Tab label="Активные" />
-          <Tab label="Завершённые" />
-        </Tabs>
+        <Filter />
         <Divider />
         <List>
-          {state.map((data) => (
-            <Item
-              key={data.id}
-              text={data.text}
-              checkedItem={data.checked}
-              checkTask={checkTask}
-              deleteTask={deleteTask}
-              id={data.id}
-            />
-          ))}
+          {state.tasks
+            .filter((obj) => {
+              if (state.filter.filterBy === "all") {
+                return true;
+              }
+              if (state.filter.filterBy === "completed") {
+                return obj.completed;
+              }
+              if (state.filter.filterBy === "active") {
+                return !obj.completed;
+              }
+            })
+            .map((obj) => (
+              <Item
+                key={obj.id}
+                text={obj.text}
+                completed={obj.completed}
+                onClickRemove={() => handleClickRemove(obj.id)}
+                onClickCheckbox={() => handleClickToggle(obj.id)}
+              />
+            ))}
         </List>
         <Divider />
         <div className="check-buttons">
-          <Button onClick={checkAll}>
-            {boolean ? "Снять отметки" : "Отметить всё"}
+          <Button
+            disabled={!state.tasks.length}
+            onClick={handleClickCompleteAll}
+          >
+            Отметить всё
           </Button>
-          <Button onClick={deleteAll}>Очистить</Button>
+          <Button disabled={!state.tasks.length} onClick={handleClickClearAll}>
+            Очистить
+          </Button>
         </div>
       </Paper>
     </div>
